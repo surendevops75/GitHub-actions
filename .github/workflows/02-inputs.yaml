@@ -43,6 +43,3 @@ jobs:
           echo "Name: ${{ github.event.inputs.name }}"
           echo "Environment: ${{ github.event.inputs.env }}"
           echo "Retry Count: ${{ github.event.inputs.retry_count }}"
-
-
-          
