@@ -1,0 +1,263 @@
+# GitHub Actions Parallel and Sequential Jobs Example
+
+This workflow demonstrates how jobs execute in parallel and sequential order in GitHub Actions using the `needs` keyword.
+
+By default, jobs in GitHub Actions run in parallel to reduce workflow execution time. However, some jobs may depend on others and should only start after previous jobs complete successfully. The `needs` keyword is used to create job dependencies.
+
+This workflow contains four jobs:
+
+* `job-1`
+* `job-2`
+* `job-3`
+* `job-4`
+
+Some jobs run independently, while others wait for dependent jobs to finish.
+
+---
+
+# Workflow File
+
+# Workflow name shown in GitHub Actions UI
+name: parellel
+
+# Trigger workflow on every push
+on: [push]
+
+jobs:
+
+  # First job
+  job-1:
+
+    # Runner machine
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # Simulate long-running task
+      - name: Print Hello World
+        run: sleep 20
+
+  # Second job
+  # This job depends on job-1
+  # It starts only after job-1 completes successfully
+  job-2:
+
+    # Dependency configuration
+    needs: job-1
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Print Hello World
+        run: sleep 20
+
+  # Third job
+  # No dependency defined
+  # Runs immediately in parallel
+  job-3:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Print Hello World
+        run: sleep 20
+
+  # Fourth job
+  # Depends on job-2
+  # Starts only after job-2 completes successfully
+  job-4:
+
+    needs: job-2
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Print Hello World
+        run: sleep 20
+```
+
+---
+
+# Important Concepts
+
+# Parallel Execution
+
+By default, GitHub Actions runs jobs in parallel when no dependency exists.
+
+In this workflow:
+
+* `job-1` and `job-3` start at the same time
+
+Because:
+
+```yaml id="v4n7pd"
+job-3:
+```
+
+does not contain:
+
+```yaml id="w1q8mb"
+needs:
+```
+
+This improves CI/CD speed because multiple jobs execute simultaneously.
+
+---
+
+# Sequential Execution Using `needs`
+
+The `needs` keyword creates dependencies between jobs.
+
+Example:
+needs: job-1
+```
+
+This means:
+
+* `job-2` waits for `job-1`
+* If `job-1` fails, `job-2` will not run
+
+Similarly:
+needs: job-2
+```
+
+means:
+
+* `job-4` waits for `job-2`
+
+---
+
+# Workflow Execution Order
+
+## Actual Execution Flow
+Workflow Starts
+       ↓
+job-1 ───────────┐
+                 │
+job-3 ───────────┘   (runs in parallel)
+       ↓
+job-2 starts after job-1
+       ↓
+job-4 starts after job-2
+       ↓
+Workflow Complete
+```
+
+---
+
+# Job Dependency Chain
+job-1 → job-2 → job-4
+```
+
+Independent job:
+job-3
+```
+
+runs separately in parallel.
+
+---
+
+# Why `sleep 20` Is Used
+run: sleep 20
+```
+
+This command pauses execution for 20 seconds to simulate a long-running task.
+
+Used for demonstration purposes to clearly observe:
+
+* Parallel execution
+* Dependency-based execution order
+
+---
+
+# Real DevOps Use Cases
+
+## Parallel Jobs
+
+Used for:
+
+* Running tests simultaneously
+* Multi-platform builds
+* Security scans
+* Linting
+* Docker image builds
+
+Example:
+
+
+Frontend Tests
+Backend Tests
+Security Scan
+```
+
+can run together in parallel.
+
+---
+
+## Sequential Jobs
+
+Used for:
+
+* Build → Test → Deploy pipelines
+* Terraform apply after validation
+* Deploy after Docker image build
+* Production deployment approvals
+
+Example:
+
+Build Application
+      ↓
+Run Tests
+      ↓
+Push Docker Image
+      ↓
+Deploy to Kubernetes
+```
+
+---
+
+# Benefits of Parallel Execution
+
+* Faster CI/CD pipelines
+* Reduced workflow duration
+* Better resource utilization
+* Faster developer feedback
+
+---
+
+# Benefits of Sequential Execution
+
+* Controlled deployment flow
+* Dependency management
+* Safer production releases
+* Better workflow organization
+
+---
+
+# Why This Workflow Is Important
+
+Understanding parallel and sequential job execution is a core concept in CI/CD pipeline design.
+
+Without dependencies:
+
+* Jobs may execute in wrong order
+* Deployments may fail
+* Required artifacts may be missing
+
+Using `needs` helps create structured and reliable automation pipelines in GitHub Actions.
+
+---
+
+# How to Run
+
+1. Push code to repository
+2. Open Actions tab
+3. Select workflow run
+4. Observe job execution order
+5. Notice:
+
+   * `job-1` and `job-3` start together
+   * `job-2` waits for `job-1`
+   * `job-4` waits for `job-2`
+
+---
