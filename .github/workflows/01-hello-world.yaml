@@ -1,8 +1,127 @@
-name: Hello World # workflow name
-on: [push] # event
-jobs: # it can contain multiple jobs
-  hello: # job name
-    runs-on: ubuntu-latest # where to run
+# Workflow name shown in GitHub Actions UI
+name: Hello World
+
+# Event that triggers the workflow
+# This workflow runs whenever code is pushed to the repository
+on: [push]
+
+# Jobs section
+# A workflow can contain one or multiple jobs
+jobs:
+
+  # Job name
+  hello:
+
+    # Runner machine where the job will execute
+    # GitHub provides Ubuntu virtual machine
+    runs-on: ubuntu-latest
+
+    # Steps to execute inside the job
     steps:
+
+      # Step name shown in Actions logs
       - name: Print Hello World
+
+        # Command executed inside the runner
+        # echo prints text in terminal/logs
         run: echo "Hello, world!"
+
+# --------------------------------------------------------
+# WORKFLOW FLOW
+# --------------------------------------------------------
+#
+# 1. Developer pushes code to GitHub
+# 2. GitHub detects push event
+# 3. Workflow starts automatically
+# 4. Ubuntu runner machine is created
+# 5. Job "hello" starts execution
+# 6. Step runs echo command
+# 7. "Hello, world!" prints in logs
+# 8. Workflow completes successfully
+#
+# --------------------------------------------------------
+# IMPORTANT KEYWORDS
+# --------------------------------------------------------
+#
+# name:
+# → Workflow name
+#
+# on:
+# → Trigger event
+#
+# jobs:
+# → Collection of jobs
+#
+# runs-on:
+# → Operating system/runner machine
+#
+# steps:
+# → Tasks executed inside job
+#
+# run:
+# → Execute shell command
+#
+# --------------------------------------------------------
+# REAL DEVOPS USAGE
+# --------------------------------------------------------
+#
+# Instead of echo commands, real projects use:
+#
+# → Run tests
+# → Build applications
+# → Build Docker images
+# → Push images to registry
+# → Deploy applications
+# → Run security scans
+# → Send notifications
+
+This is a basic GitHub Actions workflow that automatically runs whenever code is pushed to the repository. 
+It is commonly used as the first example for learning CI/CD because it demonstrates the core structure of a workflow in a simple and easy-to-understand way.
+
+The workflow starts with the name field, which defines the workflow name displayed inside the GitHub Actions dashboard. 
+In this example, the workflow is named Hello World.
+
+name: Hello World
+
+The on section defines the event that triggers the workflow. 
+Here, the workflow runs automatically whenever a push event occurs, meaning any new commit pushed to the repository will trigger execution.
+
+on: [push]
+
+The jobs section contains all jobs that the workflow should execute. 
+A workflow can have one or multiple jobs running sequentially or in parallel depending on the configuration.
+
+jobs:
+
+Inside jobs, the workflow defines a job named hello. 
+Each job requires a runner machine to execute commands. The runs-on field specifies the operating system or virtual machine used for execution. 
+In this example, the job runs on the latest Ubuntu runner provided by GitHub.
+
+hello:
+  runs-on: ubuntu-latest
+
+Every job contains steps, which are the actual tasks executed one by one. 
+A step can run commands, execute scripts, or use reusable actions from the GitHub Marketplace.
+
+steps:
+
+The workflow contains one step named Print Hello World. The run keyword executes a shell command inside the runner machine. 
+Here, it simply prints the message "Hello, world!" to the workflow logs.
+
+- name: Print Hello World
+  run: echo "Hello, world!"
+
+When the workflow executes, GitHub automatically creates a temporary Ubuntu virtual machine, runs the command, 
+displays the output in the Actions logs, and then destroys the runner after completion.
+
+This simple workflow helps beginners understand the main building blocks of GitHub Actions workflows:
+
+name → workflow name
+on → trigger event
+jobs → collection of tasks
+runs-on → execution environment
+steps → actions or commands executed inside the job
+run → shell command execution
+
+In real DevOps projects, workflows like this are expanded to include testing, building applications, scanning code, creating Docker images, and 
+deploying applications automatically through CI/CD pipelines.
