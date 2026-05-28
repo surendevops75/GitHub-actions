@@ -1,0 +1,438 @@
+# GitHub Actions Environment Variables Example
+
+This workflow demonstrates how environment variables (`env`) work in GitHub Actions at different levels:
+
+* Workflow level
+* Job level
+* Step level
+
+Environment variables help make workflows reusable, configurable, and easier to maintain. Instead of hardcoding values multiple times, variables can be defined once and reused throughout the workflow.
+
+This workflow also demonstrates how to use built-in GitHub context variables like:
+
+* `github.repository`
+* `github.ref_name`
+* `github.sha`
+
+These variables are heavily used in CI/CD pipelines for deployments, tagging, logging, automation, and dynamic workflow behavior.
+
+---
+
+# Workflow File
+
+# Workflow name shown in GitHub Actions UI
+name: Environment Example
+
+# Trigger workflow whenever code is pushed
+on: [push]
+
+# -------------------------
+# WORKFLOW-LEVEL ENV
+# -------------------------
+
+# Variables defined here are available
+# to all jobs and all steps in workflow
+env:
+
+  # Application name
+  APP_NAME: my-app
+
+  # Global timeout value
+  GLOBAL_TIMEOUT: 30
+
+  # Owner/team name
+  OWNER: "Join DevOps"
+
+jobs:
+
+  # Job name
+  demo:
+
+    # Runner machine
+    runs-on: ubuntu-latest
+
+    # -------------------------
+    # JOB-LEVEL ENV
+    # -------------------------
+
+    # Variables defined here are available
+    # only inside this job
+    env:
+
+      # Job-specific variable
+      JOB_ENV: "job-level-value"
+
+      # AWS region example
+      REGION: "ap-south-1"
+
+    steps:
+
+      # Print workflow-level + job-level variables
+      - name: Show workflow-level + job-level env
+        run: |
+
+          echo "APP_NAME: $APP_NAME"
+          echo "GLOBAL_TIMEOUT: $GLOBAL_TIMEOUT"
+          echo "OWNER: $OWNER"
+
+          echo "JOB_ENV: $JOB_ENV"
+          echo "REGION: $REGION"
+
+      # -------------------------
+      # STEP-LEVEL ENV
+      # -------------------------
+
+      # Variables defined here are available
+      # only inside this step
+      - name: Step with custom environment variables
+
+        env:
+
+          # Overrides workflow-level APP_NAME
+          APP_NAME: "my-app-step"
+
+          # Step-specific variable
+          STEP_VAR2: "world"
+
+        run: |
+
+          echo "APP_NAME: $APP_NAME"
+          echo "STEP_VAR2: $STEP_VAR2"
+
+      # -------------------------
+      # GITHUB DEFAULT VARIABLES
+      # -------------------------
+
+      # Access GitHub context variables
+      - name: Using GitHub context
+        run: |
+
+          # Repository name
+          echo "REPO: ${{ github.repository }}"
+
+          # Current branch name
+          echo "BRANCH: ${{ github.ref_name }}"
+
+          # Commit SHA
+          echo "COMMIT: ${{ github.sha }}"
+```
+
+---
+
+# Important Concepts
+
+# Workflow-Level Environment Variables
+
+Defined at top level:
+
+```yaml id="j8v1rt"
+env:
+```
+
+Available across:
+
+* All jobs
+* All steps
+
+Example:
+
+```yaml id="w3m6pa"
+APP_NAME: my-app
+```
+
+This variable can be accessed anywhere in workflow using:
+
+```yaml id="f2q9zc"
+$APP_NAME
+```
+
+---
+
+# Job-Level Environment Variables
+
+Defined inside a job:
+
+```yaml id="n7u4dx"
+jobs:
+  demo:
+    env:
+```
+
+Available only inside that specific job.
+
+Example:
+
+```yaml id="b5k1qe"
+REGION: ap-south-1
+```
+
+Common use cases:
+
+* AWS region
+* Deployment environment
+* Job-specific configuration
+
+---
+
+# Step-Level Environment Variables
+
+Defined inside a step:
+
+```yaml id="v8r2ny"
+steps:
+  - name:
+    env:
+```
+
+Available only inside that single step.
+
+Example:
+
+```yaml id="q1x6tp"
+STEP_VAR2: world
+```
+
+Useful for:
+
+* Temporary credentials
+* Step-specific configuration
+* Command customization
+
+---
+
+# Variable Override Behavior
+
+Environment variables follow this priority order:
+
+```text id="u6n3ws"
+Step Level
+    ↓
+Job Level
+    ↓
+Workflow Level
+```
+
+Higher scope overrides lower scope.
+
+Example:
+
+Workflow level:
+
+```yaml id="s4p9mv"
+APP_NAME: my-app
+```
+
+Step level:
+
+```yaml id="t2k8zy"
+APP_NAME: my-app-step
+```
+
+Inside that step:
+
+```text id="r7m1fd"
+my-app-step
+```
+
+will be used instead of:
+
+```text id="d8q5vn"
+my-app
+```
+
+---
+
+# Accessing Environment Variables
+
+Variables are accessed using shell syntax:
+
+```yaml id="x9v2kr"
+$VARIABLE_NAME
+```
+
+Example:
+
+```yaml id="e6n4tb"
+echo "$APP_NAME"
+```
+
+---
+
+# GitHub Context Variables
+
+GitHub automatically provides built-in context variables.
+
+---
+
+## github.repository
+
+```yaml id="m5q8wx"
+${{ github.repository }}
+```
+
+Returns:
+
+```text id="z4r1pn"
+owner/repository-name
+```
+
+Example:
+
+```text id="g2x7ua"
+surendra-devops/github-actions-demo
+```
+
+---
+
+## github.ref_name
+
+```yaml id="c8t3my"
+${{ github.ref_name }}
+```
+
+Returns current branch name.
+
+Example:
+
+```text id="y6n1qb"
+main
+feature-login
+dev
+```
+
+---
+
+## github.sha
+
+```yaml id="k4v9pe"
+${{ github.sha }}
+```
+
+Returns commit SHA hash.
+
+Example:
+
+```text id="a3u7wd"
+f9a12e45c67...
+```
+
+Used for:
+
+* Docker image tagging
+* Deployment tracking
+* Release versioning
+
+---
+
+# Workflow Execution Flow
+
+```text id="p8r4qy"
+Workflow Starts
+       ↓
+Workflow-level variables loaded
+       ↓
+Job starts
+       ↓
+Job-level variables loaded
+       ↓
+Step executes
+       ↓
+Step-level variables override values
+       ↓
+GitHub context variables printed
+       ↓
+Workflow Complete
+```
+
+---
+
+# Real DevOps Use Cases
+
+## Workflow-Level Variables
+
+Used for:
+
+* Global application name
+* Organization settings
+* Shared pipeline configuration
+
+---
+
+## Job-Level Variables
+
+Used for:
+
+* Environment selection
+* Region configuration
+* Deployment settings
+
+Example:
+
+```text id="u1m6xz"
+dev
+staging
+prod
+```
+
+---
+
+## Step-Level Variables
+
+Used for:
+
+* Temporary credentials
+* Script customization
+* Dynamic command arguments
+
+---
+
+## GitHub Context Variables
+
+Used for:
+
+* Docker image tags
+* Branch-based deployments
+* Release automation
+* Audit tracking
+
+Example:
+
+```yaml id="l2k7vr"
+docker build -t app:${{ github.sha }}
+```
+
+---
+
+# Why Environment Variables Are Important
+
+Without environment variables:
+
+* Workflows become hardcoded
+* Configuration duplication increases
+* Maintenance becomes difficult
+
+Environment variables help create:
+
+* Reusable workflows
+* Dynamic pipelines
+* Cleaner CI/CD configurations
+* Easier environment management
+
+They are a core part of DevOps automation using GitHub Actions.
+
+---
+
+# How to Run
+
+1. Push code to repository
+2. Open Actions tab
+3. Select workflow run
+4. Observe environment variable outputs
+5. Notice:
+
+   * Workflow-level variables available everywhere
+   * Job-level variables available inside job
+   * Step-level variables override values locally
+   * GitHub context variables print repository details
+
+---
