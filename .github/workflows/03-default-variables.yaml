@@ -1,0 +1,209 @@
+# GitHub Actions Contexts Demo
+
+This workflow demonstrates how to print different GitHub Actions contexts available during workflow execution in GitHub Actions.
+
+Contexts provide runtime information about the workflow, repository, runner machine, jobs, steps, inputs, and more. These are extremely useful for building dynamic and reusable CI/CD pipelines.
+
+---
+
+# Workflow File
+
+```yaml
+# Workflow name shown in GitHub Actions UI
+name: Print All GitHub Contexts
+
+# Trigger workflow manually
+on:
+  workflow_dispatch:
+
+    # User inputs shown while running workflow
+    inputs:
+
+      # Example input field
+      sample_input:
+        description: "Example input"
+        required: false
+        default: "hello"
+
+jobs:
+
+  # Job name
+  show-contexts:
+
+    # Runner machine
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # Print complete github context
+      # Contains repository, branch, actor, event, workflow details
+      - name: Print github context
+        run: |
+          echo '${{ toJSON(github) }}'
+
+      # Print environment variables context
+      - name: Print env context
+        run: |
+          echo '${{ toJSON(env) }}'
+
+      # Print current job details
+      - name: Print job context
+        run: |
+          echo '${{ toJSON(job) }}'
+
+      # Print runner machine information
+      # Example: OS, architecture, temp directory
+      - name: Print runner context
+        run: |
+          echo '${{ toJSON(runner) }}'
+
+      # Print step execution details
+      # Includes outputs and status of previous steps
+      - name: Print steps context
+        run: |
+          echo '${{ toJSON(steps) }}'
+
+      # Print workflow_dispatch input values
+      - name: Print inputs context
+        run: |
+          echo '${{ toJSON(inputs) }}'
+
+      # Print matrix strategy values
+      # Empty here because matrix strategy is not defined
+      - name: Print matrix context
+        run: |
+          echo '${{ toJSON(matrix) }}'
+```
+
+---
+
+# Important Contexts
+
+## github Context
+
+Contains information about:
+
+* Repository
+* Branch
+* Workflow
+* Commit SHA
+* Actor/User
+* Event details
+
+Example:
+
+```yaml
+${{ github.ref }}
+${{ github.actor }}
+```
+
+---
+
+## env Context
+
+Contains environment variables available during workflow execution.
+
+Example:
+
+```yaml
+${{ env.MY_VARIABLE }}
+```
+
+---
+
+## job Context
+
+Contains details about the current job.
+
+Example:
+
+* Job status
+* Container information
+* Services
+
+---
+
+## runner Context
+
+Contains details about the GitHub runner machine.
+
+Example:
+
+* Operating system
+* Architecture
+* Temporary directories
+
+---
+
+## steps Context
+
+Contains outputs and status from previous steps.
+
+Example:
+
+```yaml
+${{ steps.build.outputs.image }}
+```
+
+---
+
+## inputs Context
+
+Contains values entered by users through `workflow_dispatch`.
+
+Example:
+
+```yaml
+${{ inputs.sample_input }}
+```
+
+---
+
+## matrix Context
+
+Contains matrix strategy values when using matrix builds.
+
+Example:
+
+```yaml
+strategy:
+  matrix:
+    os: [ubuntu-latest, windows-latest]
+```
+
+---
+
+# Why `toJSON()` Is Used
+
+The `toJSON()` function converts context objects into readable JSON format so they can be printed clearly inside workflow logs.
+
+Example:
+
+```yaml
+echo '${{ toJSON(github) }}'
+```
+
+---
+
+# Real DevOps Use Cases
+
+* Detect deployment branch using `github.ref`
+* Identify workflow trigger user using `github.actor`
+* Access deployment environment through `inputs`
+* Pass Docker image tags between steps using `steps`
+* Execute OS-specific commands using `runner.os`
+* Build matrix pipelines for multi-version testing
+
+---
+
+# How to Run
+
+1. Open the repository in GitHub
+2. Go to the Actions tab
+3. Select `Print All GitHub Contexts`
+4. Click `Run workflow`
+5. Enter input values if needed
+6. Start the workflow
+7. Check workflow logs to view all contexts
+
+---
