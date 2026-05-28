@@ -14,8 +14,6 @@ These features are very important in CI/CD pipelines because they help avoid:
 ---
 
 # Workflow File
-
-```yaml id="w2l9cm"
 # Workflow name shown in GitHub Actions UI
 name: Timeout Example
 

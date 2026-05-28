@@ -7,8 +7,6 @@ Contexts provide runtime information about the workflow, repository, runner mach
 ---
 
 # Workflow File
-
-```yaml
 # Workflow name shown in GitHub Actions UI
 name: Print All GitHub Contexts
 

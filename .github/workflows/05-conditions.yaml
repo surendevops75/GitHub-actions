@@ -1,0 +1,251 @@
+# GitHub Actions Conditions Example
+
+This workflow demonstrates how to use conditional execution in GitHub Actions using the `if` keyword.
+
+Conditional statements allow workflows to execute specific steps only when certain conditions are met. This is extremely useful in CI/CD pipelines because different branches often require different deployment behaviors.
+
+In this example:
+
+* Code pushed to the `main` branch triggers a production deployment step
+* Code pushed to feature branches triggers a development deployment step
+
+This helps automate environment-specific deployments using branch-based logic.
+
+---
+
+# Workflow File
+# Workflow name shown in GitHub Actions UI
+name: Conditions
+
+# Trigger workflow whenever code is pushed
+on: [push]
+
+jobs:
+
+  # Job name
+  conditions-demo:
+
+    # Runner machine
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # Simple step to print message
+      - name: Print Hello World
+        run: echo "Hello, world!"
+
+      # Execute this step only when code is pushed to main branch
+      # refs/heads/main → full Git reference for main branch
+      - name: trigger PROD deploy
+        if: github.ref == 'refs/heads/main'
+        run: echo "deploy to PROD"
+
+      # Execute this step only for feature branches
+      # startsWith() is commonly used for branch pattern matching
+      - name: trigger DEV deploy
+        if: startsWith(github.ref, 'refs/heads/feature-')
+        run: echo "deploy to DEV"
+```
+
+---
+
+# Important Concepts
+
+## if Condition
+
+The `if` keyword is used to conditionally execute steps, jobs, or workflows.
+
+Example:
+if: github.ref == 'refs/heads/main'
+```
+
+If the condition evaluates to:
+
+* `true` → step executes
+* `false` → step is skipped
+
+---
+
+# github.ref
+
+The `github.ref` context contains the full Git reference of the branch or tag that triggered the workflow.
+
+Examples:
+refs/heads/main
+refs/heads/dev
+refs/heads/feature-login
+```
+
+---
+
+# Production Deployment Condition
+
+```yaml id="x8q5na"
+if: github.ref == 'refs/heads/main'
+```
+
+This condition ensures:
+
+* Step runs only for the `main` branch
+* Commonly used for production deployments
+
+Example flow:
+
+* Push to `main`
+* Workflow runs
+* PROD deployment step executes
+
+---
+
+# Feature Branch Deployment Condition
+
+```yaml id="n5v2qy"
+if: startsWith(github.ref, 'refs/heads/feature-')
+```
+
+This condition checks whether the branch name starts with `feature-`.
+
+Examples:
+
+* feature-login
+* feature-auth
+* feature-payment
+
+These branches will trigger the DEV deployment step.
+
+---
+
+# Why `startsWith()` Is Used
+
+Branch pattern matching should use functions like:
+
+```yaml id="t7r1pk"
+startsWith()
+contains()
+endsWith()
+```
+
+because direct wildcard matching like:
+
+```yaml id="f2m9za"
+github.ref == 'refs/heads/feature-*'
+```
+
+does not work correctly in GitHub Actions expressions.
+
+---
+
+# Workflow Flow
+
+## Push to Main Branch
+
+```text id="w4n7sx"
+Developer pushes code → main branch
+        ↓
+Workflow starts
+        ↓
+Hello World step runs
+        ↓
+PROD deployment step runs
+        ↓
+DEV deployment step is skipped
+```
+
+---
+
+## Push to Feature Branch
+
+```text id="v9c6pt"
+Developer pushes code → feature-login branch
+        ↓
+Workflow starts
+        ↓
+Hello World step runs
+        ↓
+DEV deployment step runs
+        ↓
+PROD deployment step is skipped
+```
+
+---
+
+# Real DevOps Use Cases
+
+Conditional execution is heavily used in CI/CD pipelines for:
+
+* Production deployments
+* Staging deployments
+* Feature environment deployments
+* Security scans
+* Approval workflows
+* Branch-specific testing
+* Release automation
+
+Example:
+
+* `main` → deploy to production
+* `develop` → deploy to staging
+* `feature-*` → deploy to development
+
+---
+
+# Common Conditional Functions
+
+## startsWith()
+
+```yaml id="r3y6ml"
+startsWith(github.ref, 'refs/heads/feature-')
+```
+
+Checks whether a string starts with a value.
+
+---
+
+## contains()
+
+```yaml id="m8k1wb"
+contains(github.ref, 'release')
+```
+
+Checks whether string contains specific text.
+
+---
+
+## endsWith()
+
+```yaml id="q4u8zn"
+endsWith(github.ref, '-prod')
+```
+
+Checks whether string ends with specific text.
+
+---
+
+# Why Conditions Are Important
+
+Without conditions:
+
+* Every deployment runs for every branch
+* Production deployments may trigger accidentally
+* CI/CD pipelines become unsafe
+
+Using conditions helps:
+
+* Automate branch-based workflows
+* Protect production environments
+* Create smarter deployment pipelines
+* Reduce unnecessary executions
+
+This is a core concept in modern DevOps automation using GitHub Actions.
+
+---
+
+# How to Run
+
+1. Push code to different branches
+2. Open GitHub Actions tab
+3. Observe workflow execution
+4. Check which steps were executed or skipped
+5. Verify branch-based deployment logic
+
+---
