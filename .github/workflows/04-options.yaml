@@ -1,37 +1,45 @@
 # GitHub Actions Timeout and Concurrency Example
 
-This workflow demonstrates how to use `timeout-minutes` and `concurrency` in GitHub Actions.
+This workflow demonstrates how to use:
 
-The workflow automatically runs whenever code is pushed to the repository. It includes a timeout configuration to stop jobs that run too long and a concurrency configuration to prevent multiple workflow runs from executing simultaneously on the same branch.
+* `timeout-minutes`
+* `concurrency`
 
-These features are very important in CI/CD pipelines because they help avoid:
+in GitHub Actions.
 
-* Wasted runner resources
-* Duplicate deployments
-* Long-running stuck jobs
-* Queue congestion
+These features are very important in CI/CD pipelines because they help:
+
+* Prevent stuck workflows
+* Avoid duplicate executions
+* Optimize runner usage
+* Protect deployments from conflicts
+
+This workflow intentionally runs a long-running task to demonstrate how timeout behavior works.
 
 ---
 
 # Workflow File
+
+```yaml
 # Workflow name shown in GitHub Actions UI
 name: Timeout Example
 
 # Trigger workflow on every push
 on: [push]
 
-# Concurrency configuration
+# --------------------------------------------------------
+# CONCURRENCY CONFIGURATION
+# --------------------------------------------------------
+
 concurrency:
 
   # Unique concurrency group
-  # Combines repository name + branch name
-  # Example:
-  # myrepo-main
-  # myrepo-dev
+  # Combines repository + branch reference
   group: ${{ github.repository }}-${{ github.ref }}
 
-  # If a new workflow starts on same branch,
-  # cancel currently running workflow
+  # If a new workflow starts for same group:
+  # - cancel currently running workflow
+  # - start latest workflow
   cancel-in-progress: true
 
 jobs:
@@ -39,28 +47,38 @@ jobs:
   # Job name
   test-timeout:
 
-    # Runner machine
+    # GitHub runner machine
     runs-on: ubuntu-latest
 
-    # Maximum allowed execution time for job
-    # If job exceeds 5 minutes, GitHub terminates it
+    # --------------------------------------------------------
+    # JOB TIMEOUT
+    # --------------------------------------------------------
+
+    # Maximum execution time allowed for job
+    # GitHub automatically terminates job after 5 minutes
     timeout-minutes: 5
 
     steps:
 
-      # First step
+      # --------------------------------------------------------
+      # START STEP
+      # --------------------------------------------------------
+
       - name: Start job
         run: echo "This job will timeout if it runs longer than 5 minutes."
 
-      # Simulate long running process
+      # --------------------------------------------------------
+      # LONG RUNNING TASK
+      # --------------------------------------------------------
+
       - name: Simulate long running task
+
         run: |
 
           # Print message in logs
           echo "Sleeping for 10 minutes..."
 
-          # Sleep command pauses execution for 600 seconds
-          # (10 minutes)
+          # Sleep for 600 seconds (10 minutes)
           sleep 600
 ```
 
@@ -68,152 +86,278 @@ jobs:
 
 # Important Concepts
 
-## timeout-minutes
+# timeout-minutes
 
-The `timeout-minutes` keyword defines the maximum execution time allowed for a job.
-
-Example:
-
-```yaml id="v2q8pk"
+```yaml
 timeout-minutes: 5
 ```
 
-If the job runs longer than 5 minutes:
+Defines maximum execution time for a job.
 
-* GitHub automatically stops the job
-* Workflow fails with timeout error
-* Resources are released
+If job execution exceeds:
 
-In this workflow:
-
-* The job sleeps for 10 minutes
-* Timeout is set to 5 minutes
-* GitHub terminates the job automatically after 5 minutes
-
----
-
-## concurrency
-
-The `concurrency` feature prevents multiple workflow runs from executing simultaneously for the same group.
-
-Example:
-
-```yaml id="k6z4tx"
-concurrency:
-  group: ${{ github.repository }}-${{ github.ref }}
-  cancel-in-progress: true
+```text
+5 minutes
 ```
 
-### group
+GitHub Actions:
 
-Defines a unique concurrency identifier.
-
-Here:
-
-* `${{ github.repository }}` → repository name
-* `${{ github.ref }}` → branch name
-
-This creates separate concurrency groups per branch.
-
-Example groups:
-
-* repo-main
-* repo-dev
-* repo-feature-login
+* Stops the job
+* Marks workflow as failed
+* Releases runner resources
 
 ---
 
-## cancel-in-progress
+# Why Timeout Is Important
 
-```yaml id="f1m7wd"
+Without timeout:
+
+* Jobs may run forever
+* Pipelines may get stuck
+* Runner resources get wasted
+* CI/CD queues become blocked
+
+Timeout helps:
+
+* Improve pipeline reliability
+* Reduce infrastructure waste
+* Prevent infinite execution loops
+
+---
+
+# sleep 600
+
+```yaml
+sleep 600
+```
+
+Pauses execution for:
+
+```text
+600 seconds = 10 minutes
+```
+
+This intentionally exceeds:
+
+```yaml
+timeout-minutes: 5
+```
+
+so GitHub terminates the job automatically.
+
+---
+
+# concurrency
+
+```yaml
+concurrency:
+```
+
+Prevents multiple workflows from running simultaneously for same group.
+
+Useful for:
+
+* Deployments
+* Infrastructure changes
+* Shared resource pipelines
+
+---
+
+# group
+
+```yaml
+group: ${{ github.repository }}-${{ github.ref }}
+```
+
+Creates unique concurrency identifier.
+
+Breakdown:
+
+```text
+github.repository → repository name
+github.ref        → branch reference
+```
+
+Example generated group:
+
+```text
+roboshop-catalogue-refs/heads/main
+```
+
+This means:
+
+* Each branch gets separate concurrency control
+
+---
+
+# cancel-in-progress
+
+```yaml
 cancel-in-progress: true
 ```
 
-When enabled:
+Behavior:
 
-* Older running workflow gets cancelled
-* Latest workflow continues execution
+* Existing running workflow gets cancelled
+* Latest workflow starts immediately
 
-This is useful because only the newest code changes should continue through the pipeline.
+Example:
+
+```text
+Push commit A
+      ↓
+Workflow starts
+      ↓
+Push commit B
+      ↓
+Workflow A cancelled
+      ↓
+Workflow B starts
+```
 
 ---
 
-# Workflow Flow
+# Why Concurrency Is Important
 
-1. Developer pushes code
-2. GitHub starts workflow
-3. Concurrency checks existing running workflows
-4. Previous workflow gets cancelled if same branch is already running
-5. New workflow starts
-6. Job begins execution
-7. Sleep command runs for 10 minutes
-8. GitHub stops job after 5 minutes due to timeout
-9. Workflow fails with timeout error
+Without concurrency:
+
+* Multiple deployments may run simultaneously
+* Older deployments may overwrite newer changes
+* Runner resources may be wasted
+
+Concurrency helps:
+
+* Ensure latest code gets priority
+* Prevent deployment conflicts
+* Reduce duplicate executions
+
+---
+
+# Workflow Execution Flow
+
+```text
+Developer pushes code
+          ↓
+Workflow starts
+          ↓
+Concurrency group check
+          ↓
+Previous workflow cancelled (if running)
+          ↓
+Runner starts job
+          ↓
+Long-running task begins
+          ↓
+Job exceeds 5 minutes
+          ↓
+GitHub automatically terminates job
+          ↓
+Workflow marked as failed
+```
 
 ---
 
 # Real DevOps Use Cases
 
-## timeout-minutes
+# timeout-minutes
 
-Used to:
+Used for:
 
-* Prevent stuck deployments
-* Stop hanging test suites
-* Avoid infinite execution loops
-* Save GitHub runner minutes
+* Long-running test protection
+* Deployment timeout control
+* Terraform execution safety
+* Kubernetes rollout monitoring
 
 Example:
 
-```yaml id="tb9u3x"
+```yaml
 timeout-minutes: 30
 ```
 
 ---
 
-## concurrency
+# concurrency
 
-Used to:
+Used for:
 
-* Prevent duplicate deployments
-* Avoid parallel production releases
-* Ensure only latest commit gets deployed
-* Reduce CI/CD queue congestion
+* Production deployments
+* Infrastructure provisioning
+* Terraform apply protection
+* Kubernetes deployment locking
 
-Very common in:
+Common example:
 
-* Kubernetes deployments
-* Terraform pipelines
-* Production release workflows
-* Docker image builds
+```text
+Only one production deployment at a time
+```
+
+---
+
+# Production Best Practices
+
+## Use Timeouts
+
+Always define:
+
+```yaml
+timeout-minutes:
+```
+
+for:
+
+* Build jobs
+* Test jobs
+* Deployment jobs
+
+---
+
+## Use Concurrency
+
+Recommended for:
+
+* Production pipelines
+* Stateful deployments
+* Shared infrastructure automation
+
+---
+
+# Benefits of This Workflow Design
+
+* Prevents stuck CI/CD jobs
+* Saves GitHub runner minutes
+* Avoids duplicate deployments
+* Prioritizes latest changes
+* Improves pipeline stability
 
 ---
 
 # Why This Workflow Is Important
 
-Without timeout configuration:
+This workflow demonstrates advanced CI/CD control mechanisms using:
 
-* Jobs may run forever
-* CI/CD pipelines become blocked
-* Runner resources get wasted
+* GitHub Actions
+* Timeout management
+* Concurrency control
+* Workflow cancellation handling
 
-Without concurrency:
-
-* Multiple deployments may run simultaneously
-* Older commits may overwrite newer deployments
-* Pipeline conflicts can occur
-
-Using both together creates safer and more optimized CI/CD pipelines in GitHub Actions.
+These concepts are heavily used in enterprise DevOps environments to build reliable and scalable automation pipelines.
 
 ---
 
 # How to Run
 
 1. Push code to repository
-2. Open Actions tab
-3. Select `Timeout Example`
-4. Start workflow
-5. Observe workflow logs
-6. Notice workflow automatically stops after 5 minutes
+
+2. Open GitHub Actions tab
+
+3. Observe workflow execution
+
+4. Notice:
+
+   * Workflow starts
+   * Sleep command runs
+   * Job gets terminated after 5 minutes
+
+5. Push multiple commits quickly to observe concurrency behavior
 
 ---
