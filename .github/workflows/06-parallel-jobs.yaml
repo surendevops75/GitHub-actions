@@ -1,0 +1,72 @@
+# Workflow File
+
+# Workflow name shown in GitHub Actions UI
+name: parellel
+
+# Trigger workflow on every push
+on: [push]
+
+jobs:
+
+  # --------------------------------------------------------
+  # JOB 1
+  # --------------------------------------------------------
+
+  job-1:
+
+    # GitHub runner machine
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # Simulate long-running task
+      - name: Print Hello World
+
+        # Sleep for 20 seconds
+        run: sleep 20
+
+  # --------------------------------------------------------
+  # JOB 2
+  # --------------------------------------------------------
+
+  job-2:
+
+    # This job depends on job-1
+    # job-2 starts only after job-1 completes successfully
+    needs: job-1
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Print Hello World
+        run: sleep 20
+
+  # --------------------------------------------------------
+  # JOB 3
+  # --------------------------------------------------------
+
+  job-3:
+
+    # No dependency defined
+    # Runs immediately in parallel
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Print Hello World
+        run: sleep 20
+
+  # --------------------------------------------------------
+  # JOB 4
+  # --------------------------------------------------------
+
+  job-4:
+
+    # Depends on job-2
+    # Starts only after job-2 completes successfully
+    needs: job-2
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Print Hello World
+        run: sleep 20
