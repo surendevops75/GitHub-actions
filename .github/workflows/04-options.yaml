@@ -1,0 +1,59 @@
+# Workflow name shown in GitHub Actions UI
+name: Timeout Example
+
+# Trigger workflow on every push
+on: [push]
+
+# --------------------------------------------------------
+# CONCURRENCY CONFIGURATION
+# --------------------------------------------------------
+
+concurrency:
+
+  # Unique concurrency group
+  # Combines repository + branch reference
+  group: ${{ github.repository }}-${{ github.ref }}
+
+  # If a new workflow starts for same group:
+  # - cancel currently running workflow
+  # - start latest workflow
+  cancel-in-progress: true
+
+jobs:
+
+  # Job name
+  test-timeout:
+
+    # GitHub runner machine
+    runs-on: ubuntu-latest
+
+    # --------------------------------------------------------
+    # JOB TIMEOUT
+    # --------------------------------------------------------
+
+    # Maximum execution time allowed for job
+    # GitHub automatically terminates job after 5 minutes
+    timeout-minutes: 5
+
+    steps:
+
+      # --------------------------------------------------------
+      # START STEP
+      # --------------------------------------------------------
+
+      - name: Start job
+        run: echo "This job will timeout if it runs longer than 5 minutes."
+
+      # --------------------------------------------------------
+      # LONG RUNNING TASK
+      # --------------------------------------------------------
+
+      - name: Simulate long running task
+
+        run: |
+
+          # Print message in logs
+          echo "Sleeping for 10 minutes..."
+
+          # Sleep for 600 seconds (10 minutes)
+          sleep 600
