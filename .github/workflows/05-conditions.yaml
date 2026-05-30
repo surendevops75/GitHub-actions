@@ -1,0 +1,48 @@
+# Workflow File
+
+# Workflow name shown in GitHub Actions UI
+name: Conditions
+
+# Trigger workflow on every push
+on: [push]
+
+jobs:
+
+  # Job name
+  conditions-demo:
+
+    # GitHub runner machine
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # --------------------------------------------------------
+      # BASIC STEP
+      # --------------------------------------------------------
+
+      - name: Print Hello World
+        run: echo "Hello, world!"
+
+      # --------------------------------------------------------
+      # PRODUCTION DEPLOYMENT STEP
+      # --------------------------------------------------------
+
+      # Execute only when branch is main
+      - name: trigger PROD deploy
+
+        # Condition
+        if: github.ref == 'refs/heads/main'
+
+        run: echo "deploy to PROD"
+
+      # --------------------------------------------------------
+      # DEVELOPMENT DEPLOYMENT STEP
+      # --------------------------------------------------------
+
+      # Execute for feature branches
+      - name: trigger DEV deploy
+
+        # startsWith() is recommended for branch pattern matching
+        if: startsWith(github.ref, 'refs/heads/feature-')
+
+        run: echo "deploy to DEV"
