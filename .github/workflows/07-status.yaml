@@ -1,0 +1,87 @@
+# Workflow File
+
+jobs:
+
+  # --------------------------------------------------------
+  # JOB NAME
+  # --------------------------------------------------------
+
+  build:
+
+    # GitHub runner machine
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # --------------------------------------------------------
+      # MAIN JOB STEPS
+      # --------------------------------------------------------
+
+      # Simulate repository checkout
+      - name: Checkout
+
+        run: echo "Cloning repo..."
+
+      # --------------------------------------------------------
+      # BUILD STEP
+      # --------------------------------------------------------
+
+      - name: Run build
+
+        run: |
+
+          # Print build message
+          echo "Running build..."
+
+          # Force step failure intentionally
+          # exit code 1 = failure
+          exit 1
+
+      # --------------------------------------------------------
+      # POST SECTION (Jenkins Style)
+      # --------------------------------------------------------
+
+      # --------------------------------------------------------
+      # SUCCESS HANDLER
+      # --------------------------------------------------------
+
+      # Executes only when all previous steps succeed
+      - name: Post - Success
+
+        if: ${{ success() }}
+
+        run: echo "🎉 Job SUCCESS — run success tasks here"
+
+      # --------------------------------------------------------
+      # FAILURE HANDLER
+      # --------------------------------------------------------
+
+      # Executes only when workflow/job fails
+      - name: Post - Failure
+
+        if: ${{ failure() }}
+
+        run: echo "❌ Job FAILED — run failure actions here"
+
+      # --------------------------------------------------------
+      # CANCEL HANDLER
+      # --------------------------------------------------------
+
+      # Executes only when workflow gets cancelled
+      - name: Post - Cancelled
+
+        if: ${{ cancelled() }}
+
+        run: echo "🛑 Job CANCELLED — run cancel handlers here"
+
+      # --------------------------------------------------------
+      # ALWAYS HANDLER
+      # --------------------------------------------------------
+
+      # Executes regardless of workflow result
+      # Commonly used for cleanup tasks
+      - name: Post - Always
+
+        if: ${{ always() }}
+
+        run: echo "🔄 ALWAYS — this runs no matter what (cleanup)"
