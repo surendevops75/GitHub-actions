@@ -1,0 +1,103 @@
+# Workflow File
+
+# Workflow name shown in GitHub Actions UI
+name: Environment Example
+
+# Trigger workflow on every push
+on: [push]
+
+# --------------------------------------------------------
+# WORKFLOW-LEVEL ENVIRONMENT VARIABLES
+# --------------------------------------------------------
+
+# Variables defined here are available
+# to all jobs and steps in workflow
+env:
+
+  # Application name
+  APP_NAME: my-app
+
+  # Global timeout value
+  GLOBAL_TIMEOUT: 30
+
+  # Owner or team name
+  OWNER: "Join DevOps"
+
+jobs:
+
+  # --------------------------------------------------------
+  # JOB DEFINITION
+  # --------------------------------------------------------
+
+  demo:
+
+    # GitHub runner machine
+    runs-on: ubuntu-latest
+
+    # --------------------------------------------------------
+    # JOB-LEVEL ENVIRONMENT VARIABLES
+    # --------------------------------------------------------
+
+    # Variables defined here are available
+    # only inside this job
+    env:
+
+      # Job-specific variable
+      JOB_ENV: "job-level-value"
+
+      # AWS region example
+      REGION: "ap-south-1"
+
+    steps:
+
+      # --------------------------------------------------------
+      # PRINT WORKFLOW + JOB VARIABLES
+      # --------------------------------------------------------
+
+      - name: Show workflow-level + job-level env
+
+        run: |
+
+          echo "APP_NAME: $APP_NAME"
+          echo "GLOBAL_TIMEOUT: $GLOBAL_TIMEOUT"
+          echo "OWNER: $OWNER"
+
+          echo "JOB_ENV: $JOB_ENV"
+          echo "REGION: $REGION"
+
+      # --------------------------------------------------------
+      # STEP-LEVEL ENVIRONMENT VARIABLES
+      # --------------------------------------------------------
+
+      - name: Step with custom environment variables
+
+        # Variables available only inside this step
+        env:
+
+          # Overrides workflow-level APP_NAME
+          APP_NAME: "my-app-step"
+
+          # Step-specific variable
+          STEP_VAR2: "world"
+
+        run: |
+
+          echo "APP_NAME: $APP_NAME"
+          echo "STEP_VAR2: $STEP_VAR2"
+
+      # --------------------------------------------------------
+      # GITHUB CONTEXT VARIABLES
+      # --------------------------------------------------------
+
+      - name: Using GitHub context
+
+        run: |
+
+          # Repository name
+          echo "REPO: ${{ github.repository }}"
+
+          # Current branch name
+          echo "BRANCH: ${{ github.ref_name }}"
+
+          # Commit SHA hash
+          echo "COMMIT: ${{ github.sha }}"
